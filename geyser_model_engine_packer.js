@@ -636,7 +636,7 @@ function calculateVisibleBox() {
                         if (texture.frameCount > 1) {
                             model_config.anim_textures[name] = {
                                 frames: texture.frameCount,
-                                fps: 7.0
+                                fps: (1000 / texture.frame_time) || 7
                             }
                         }
 
@@ -660,7 +660,62 @@ function calculateVisibleBox() {
                 }
             })
 
+            export_all_action = new Action({
+                id: 'export_all_geysermodelengine',
+                name: 'Export All Opened Models As GeyserModelEngine Models',
+                icon: 'icon-format_bedrock',
+                category: 'file',
+                click: function () {
+
+                    let zip = new JSZip();
+
+                    for (let project of ModelProject.all) {
+                        project.select()
+                        let folder = zip.folder(Project.name);
+
+                        var model_config = {
+                            head_rotation: true,
+                            material: "entity_alphatest_change_color_one_sided",
+                            blend_transition: true,
+                            per_texture_uv_size: {},
+                            binding_bones: {},
+                            anim_textures: {}
+                        }
+
+                        Texture.all.forEach(texture => {
+                            var name = texture.name.replace('.png', '')
+                            if (texture.frameCount > 1) {
+                                model_config.anim_textures[name] = {
+                                    frames: texture.frameCount,
+                                    fps: (1000 / texture.frame_time) || 7
+                                }
+                            }
+
+                            model_config.per_texture_uv_size[name] = [texture.uv_width, texture.uv_height]
+
+                            folder.file(name + '.png', texture.getBase64(), {base64: true});
+                        });
+
+                        folder.file(Project.name + ".geo.json", JSON.stringify(codec.compile(null, model_config)))
+                        folder.file(Project.name + ".animation.json", JSON.stringify(compileAnimationJson()))
+                        folder.file("config.json", JSON.stringify(model_config))
+
+                    }
+                    zip.generateAsync({ type: 'blob' }).then(content => {
+                        Blockbench.export({
+                            type: "Zip Archive",
+                            extensions: ["zip"],
+                            name: "unzip_it_to_input" + ".zip",
+                            savetype: "zip",
+                            content: content,
+                        })
+                    });
+                }
+            })
+
             MenuBar.addAction(export_action, 'file.export');
+
+            MenuBar.addAction(export_all_action, 'file.export');
 
         },
         onunload() {
