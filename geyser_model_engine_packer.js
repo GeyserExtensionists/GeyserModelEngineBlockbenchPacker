@@ -5,68 +5,14 @@ function compileAnimationJson() {
 
     var animations = {}
     Animator.animations.forEach(function (a) {
-        let ani_tag;
-        try {
-            if (typeof a.getBedrockAnimation === 'function') {
-                ani_tag = a.getBedrockAnimation();
-            } else {
-                ani_tag = a.compileBedrockAnimation();
-            }
-        } catch (e) {
-            ani_tag = buildAnimationManually(a);
-        }
-        if (ani_tag) {
-            animations[a.name] = ani_tag;
-        }
+        let ani_tag = a.compileBedrockAnimation();
+        animations[a.name] = ani_tag;
     })
     return {
         format_version: '1.8.0',
         animations: animations
     }
 
-}
-
-function buildAnimationManually(a) {
-    var tag = {
-        loop: a.loop || false,
-        animation_length: a.length || 0,
-        bones: {}
-    };
-    if (a.loop === 'hold_on_last_frame') {
-        tag.loop = 'hold_on_last_frame';
-    }
-    if (a.override !== undefined) {
-        tag.override_previous_animation = a.override;
-    }
-    for (var uuid in a.animators) {
-        var channel = a.animators[uuid];
-        if (!channel || !channel.keyframes || !channel.keyframes.length) continue;
-        var bone_name = channel.name || (channel.group && channel.group.name);
-        if (!bone_name) continue;
-        if (!tag.bones[bone_name]) tag.bones[bone_name] = {};
-        var bone = tag.bones[bone_name];
-        channel.keyframes.forEach(function (kf) {
-            var ch = kf.channel;
-            if (!bone[ch]) bone[ch] = {};
-            var time = Math.round(kf.time * 1000) / 1000;
-            var key = time.toString();
-            var data_points = kf.data_points && kf.data_points[0];
-            if (data_points) {
-                var x = data_points.x !== undefined ? data_points.x : 0;
-                var y = data_points.y !== undefined ? data_points.y : 0;
-                var z = data_points.z !== undefined ? data_points.z : 0;
-                if (kf.interpolation && kf.interpolation !== 'linear') {
-                    bone[ch][key] = { pre: [x, y, z], post: [x, y, z] };
-                } else {
-                    bone[ch][key] = [x, y, z];
-                }
-            }
-        });
-        if (!Object.keys(bone[Object.keys(bone)[0]] || {}).length) {
-            delete tag.bones[bone_name];
-        }
-    }
-    return tag;
 }
 
 function calculateVisibleBox() {
