@@ -6,7 +6,7 @@ function compileAnimationJson() {
     var animations = {}
     Animator.animations.forEach(function (a) {
         try {
-            animations[a.name] = AnimationCodec.codecs.bedrock.compile(a);
+            animations[a.name] = AnimationCodec.codecs.bedrock.compileAnimation(a);
         } catch (e) {
             console.error(`Failed for animation ${a.name}:`, e);
             console.error(`Animation object:`, a);
