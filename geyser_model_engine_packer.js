@@ -5,14 +5,17 @@ function compileAnimationJson() {
 
     var animations = {}
     Animator.animations.forEach(function (a) {
-        let ani_tag = a.compileBedrockAnimation();
-        animations[a.name] = ani_tag;
+        try {
+            animations[a.name] = AnimationCodec.codecs.bedrock.compile(a);
+        } catch (e) {
+            console.error(`Failed for animation ${a.name}:`, e);
+            console.error(`Animation object:`, a);
+        }
     })
     return {
         format_version: '1.8.0',
         animations: animations
     }
-
 }
 
 function calculateVisibleBox() {
@@ -112,8 +115,8 @@ function calculateVisibleBox() {
                     }
                 } else {
                     face.texture = null;
-                    face.uv = [0, 0, 0, 0],
-                        face.rotation = 0;
+                    face.uv = [0, 0, 0, 0]
+                    face.rotation = 0;
                 }
             }
 
@@ -720,6 +723,7 @@ function calculateVisibleBox() {
         },
         onunload() {
             export_action.delete();
+            export_all_action.delete();
         }
     });
 
