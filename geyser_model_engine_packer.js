@@ -1,5 +1,11 @@
 var export_action;
 
+// A texture's key on the Bedrock side is its file name without the extension. Stripping only
+// ".png" left "train_block_top.jpeg" as a key, and molang reads "Texture.train_block_top.jpeg"
+// as a member access, so the texture never bound.
+function textureKey(name) {
+    return name.replace(/(\.(png|jpe?g|tga|gif|bmp))+$/i, '')
+}
 
 function compileAnimationJson() {
 
@@ -493,7 +499,7 @@ function calculateVisibleBox() {
             if (config !== null) {
                 var tname = key
             
-                tname = tname.replace('.png', '')
+                tname = textureKey(tname)
                 if (config.binding_bones[tname] == null) {
                     config.binding_bones[tname] = []
                 }
@@ -658,7 +664,7 @@ function calculateVisibleBox() {
                     }
 
                     Texture.all.forEach(texture => {
-                        var name = texture.name.replace('.png', '')
+                        var name = textureKey(texture.name)
                         if (texture.frameCount > 1) {
                             model_config.anim_textures[name] = {
                                 frames: texture.frameCount,
@@ -712,7 +718,7 @@ function calculateVisibleBox() {
                         }
 
                         Texture.all.forEach(texture => {
-                            var name = texture.name.replace('.png', '')
+                            var name = textureKey(texture.name)
                             if (texture.frameCount > 1) {
                                 model_config.anim_textures[name] = {
                                     frames: texture.frameCount,
