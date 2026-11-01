@@ -1,10 +1,11 @@
 var export_action;
 
-// A texture's key on the Bedrock side is its file name without the extension. Stripping only
-// ".png" left "train_block_top.jpeg" as a key, and molang reads "Texture.train_block_top.jpeg"
-// as a member access, so the texture never bound.
+// A texture's key on the Bedrock side is its file name without the extension. Blockbench keeps the
+// imported file's name (png, jpg/jpeg, webp, tga) but stores and exports the image as PNG, so a
+// texture imported from "train_block_top.jpeg" kept ".jpeg" in its key: molang reads
+// "Texture.train_block_top.jpeg" as a member access and the texture never bound.
 function textureKey(name) {
-    return name.replace(/(\.(png|jpe?g|tga|gif|bmp))+$/i, '')
+    return name.replace(/(\.(png|jpe?g|webp|tga))+$/i, '')
 }
 
 function compileAnimationJson() {
